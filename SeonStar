@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>스텟 최적 분배 계산기</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f8f9fa;
+      padding: 30px;
+      max-width: 480px;
+      margin: auto;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 16px;
+      font-weight: bold;
+    }
+    input[type=number] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 4px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1em;
+    }
+    button {
+      margin-top: 24px;
+      width: 100%;
+      padding: 12px;
+      font-size: 1.1em;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    #result {
+      margin-top: 30px;
+      padding: 20px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      white-space: pre-line;
+      font-size: 1.05em;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎯 스텟 최적 분배 계산기</h1>
+
+  <label>일반 공격력 (장비 + 레벨, 스텟 제외):</label>
+  <input type="number" id="baseAtk" value="379" min="0" />
+
+  <label>총 스텟 개수:</label>
+  <input type="number" id="totalStat" value="413" min="1" />
+
+  <label>현재 치명타 데미지 (%):</label>
+  <input type="number" id="totalCritDmg" value="2475" min="0" />
+
+  <button onclick="calculate()">계산하기</button>
+
+  <div id="result"></div>
+
+  <script>
+    function calculate() {
+      const baseAtk = Number(document.getElementById('baseAtk').value);
+      const totalStat = Number(document.getElementById('totalStat').value);
+      const totalCritDmg = Number(document.getElementById('totalCritDmg').value);
+
+      // 기본 치명타 데미지 = 총 치명타 데미지 - (치명타 스텟 × 5)
+      // 최적 스텟 분배를 위해 반복
+      let maxTotalDmg = 0;
+      let bestAtkStat = 0;
+      let bestCritStat = 0;
+      let bestCritDmg = 0;
+      let bestFlatAtk = 0;
+
+      for (let atkStat = 0; atkStat <= totalStat; atkStat++) {
+        const critStat = totalStat - atkStat;
+        const flatAtk = baseAtk + atkStat;
+        const critDmg = totalCritDmg - (totalStat * 5) + (critStat * 5); // 보정
+        const totalDmg = flatAtk * (1 + critDmg / 100);
+
+        if (totalDmg > maxTotalDmg) {
+          maxTotalDmg = totalDmg;
+          bestAtkStat = atkStat;
+          bestCritStat = critStat;
+          bestCritDmg = critDmg;
+          bestFlatAtk = flatAtk;
+        }
+      }
+
+      document.getElementById('result').innerText = `
+✅ 최적 스텟 분배 (총 ${totalStat} 스텟 기준)
+- 공격력 스텟: ${bestAtkStat}
+- 치명타 데미지 스텟: ${bestCritStat}
+
+📌 일반 공격력 (스텟 적용 포함): ${bestFlatAtk}
+📌 최종 치명타 데미지: ${bestCritDmg}%
+
+🔥 예상 총 공격력 (치명타 100%): ${maxTotalDmg.toFixed(2)}
+      `;
+    }
+  </script>
+
+</body>
+</html>
